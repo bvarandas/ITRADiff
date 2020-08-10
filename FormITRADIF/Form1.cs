@@ -162,6 +162,44 @@ namespace FormITRADIF
                 var sourceDiferenca = new BindingSource(listaDiferencas, null);
 
                 gridItraDiferentes.DataSource = sourceDiferenca;
+
+                if (listaDiferencas.Count > 0)
+                {
+
+                    var listDuplicidade = (from a in listaDiferencas
+                               group a by new { a.CodCliente, a.CodISIN } into g
+                               select new
+                               {
+                                   g.Key.CodCliente,
+                                   g.Key.CodISIN,
+                                   myCount = g.Count()
+                               }).ToList();
+
+                    bool temDuplicidade = false;
+                    bool temClienteAMais = false;
+                    foreach (var dup in listDuplicidade)
+                    {
+                        if (dup.myCount > 1)
+                        {
+                            temDuplicidade = true;
+                            continue;
+                        }
+
+                        if (dup.myCount > 0)
+                        {
+                            temClienteAMais = true;
+                        }
+                    }
+
+                    if (temDuplicidade )
+                    {
+                        MessageBox.Show("Há diferenças em quantidades do mesmo cliente com o mesmo papel nos dois ITRAs. Verifcar se o MTM está atualizado ou Lista de Chamada de margem estão diferentes.", "Diferenças entre os arquivos foram encontradas", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    if (temClienteAMais)
+                    {
+                        MessageBox.Show("Há divergencia na quantidade de clientes na planilha, verifique a lista de chamada de margem. Depedendo da diferença de horário que as chamadas de margem foram extraídas, é normal acontecer de existirem clientes a mais em um dos ITRAs. Normalmente, a chamada de margem mais nova, tem mais clientes", "Diferenças entre os arquivos foram encontradas",MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
             }
             catch (Exception ex)
             {
